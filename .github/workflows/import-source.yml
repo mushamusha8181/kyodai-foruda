@@ -23,12 +23,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(find .import2 -maxdepth 1 -type f -name 'part_*.b64' | wc -l)" -eq 42
-          while IFS= read -r f; do
-            cleaned="$(tr -d '\n\r\t ' < "$f")"
-            printf '%s' "$cleaned" | base64 --decode >/dev/null || { echo "BAD_BASE64_FILE=$f"; echo "LENGTH=${#cleaned}"; exit 1; }
-          done < <(find .import2 -maxdepth 1 -type f -name 'part_*.b64' | sort)
-          find .import2 -maxdepth 1 -type f -name 'part_*.b64' -print0 | sort -z | xargs -0 cat | tr -d '\n\r\t ' | base64 --decode > /tmp/GiantFolder-v0.13-source.zip
+          for i in $(seq 0 40); do
+            printf -v f '.import2/part_%03d.b64' "$i"
+            test -f "$f"
+            tr -d '\n\r\t ' < "$f" | base64 --decode >/dev/null
+          done
+          for f in .import2/final_0.b64 .import2/final_1.b64 .import2/final_2.b64; do
+            test -f "$f"
+            tr -d '\n\r\t ' < "$f" | base64 --decode >/dev/null
+          done
+          {
+            for i in $(seq 0 40); do
+              printf -v f '.import2/part_%03d.b64' "$i"
+              cat "$f"
+            done
+            cat .import2/final_0.b64 .import2/final_1.b64 .import2/final_2.b64
+          } | tr -d '\n\r\t ' | base64 --decode > /tmp/GiantFolder-v0.13-source.zip
           echo "bcbcfd2205a044b262b3dcc233d75868e7b71c82d46986d0413a1d324b2816b8  /tmp/GiantFolder-v0.13-source.zip" | sha256sum -c -
           unzip -t /tmp/GiantFolder-v0.13-source.zip
 
