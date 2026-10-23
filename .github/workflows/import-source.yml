@@ -1,5 +1,6 @@
 name: Import GiantFolder source
 
+# Retry after verifying all 42 archive parts.
 on:
   push:
     branches: [ "main" ]
