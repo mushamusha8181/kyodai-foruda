@@ -42,7 +42,7 @@ jobs:
           echo "bcbcfd2205a044b262b3dcc233d75868e7b71c82d46986d0413a1d324b2816b8  /tmp/GiantFolder-v0.13-source.zip" | sha256sum -c -
           unzip -t /tmp/GiantFolder-v0.13-source.zip
 
-      - name: Replace repository with exact ZIP contents
+      - name: Replace repository with source files
         shell: bash
         run: |
           set -euo pipefail
@@ -56,15 +56,16 @@ jobs:
             --exclude='.import' \
             --exclude='.import2' \
             --exclude='.github/workflows/import-source.yml' \
+            --exclude='.github/workflows/build-apk.yml' \
             "$SRC/" ./
           diff -qr \
             --exclude='.git' \
             --exclude='.import' \
             --exclude='.import2' \
             --exclude='import-source.yml' \
+            --exclude='build-apk.yml' \
             "$SRC" .
           rm -rf .import .import2
-          rm -f .github/workflows/import-source.yml
           chmod +x build_debug_apk.command || true
 
       - name: Commit imported source
