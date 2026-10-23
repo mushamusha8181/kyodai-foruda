@@ -1,5 +1,6 @@
 name: Import GiantFolder source
 
+# One-time importer for the verified GiantFolder v0.13 source archive.
 on:
   push:
     branches: [ "main" ]
