@@ -1,12 +1,10 @@
 name: Import GiantFolder source
 
-# One-time importer for the verified GiantFolder v0.13 source archive.
 on:
   push:
     branches: [ "main" ]
     paths:
       - '.github/workflows/import-source.yml'
-      - '.import/chunk_11d.b64'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +23,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          find .import -maxdepth 1 -type f -name '*.b64' -print0 | sort -z | xargs -0 cat | base64 --decode > /tmp/GiantFolder-v0.13-source.zip
+          test "$(find .import2 -maxdepth 1 -type f -name 'part_*.b64' | wc -l)" -eq 42
+          find .import2 -maxdepth 1 -type f -name 'part_*.b64' -print0 | sort -z | xargs -0 cat | tr -d '\n\r\t ' | base64 --decode > /tmp/GiantFolder-v0.13-source.zip
           echo "bcbcfd2205a044b262b3dcc233d75868e7b71c82d46986d0413a1d324b2816b8  /tmp/GiantFolder-v0.13-source.zip" | sha256sum -c -
           unzip -t /tmp/GiantFolder-v0.13-source.zip
 
@@ -41,14 +40,16 @@ jobs:
           rsync -a --delete \
             --exclude='.git' \
             --exclude='.import' \
+            --exclude='.import2' \
             --exclude='.github/workflows/import-source.yml' \
             "$SRC/" ./
           diff -qr \
             --exclude='.git' \
             --exclude='.import' \
+            --exclude='.import2' \
             --exclude='import-source.yml' \
             "$SRC" .
-          rm -rf .import
+          rm -rf .import .import2
           rm -f .github/workflows/import-source.yml
           chmod +x build_debug_apk.command || true
 
