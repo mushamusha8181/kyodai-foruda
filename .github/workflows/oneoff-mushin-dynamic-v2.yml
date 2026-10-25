@@ -1,0 +1,28 @@
+name: Giant Folder MUSHIN dynamic patch v2
+
+on:
+  push:
+    paths:
+      - 'tools/oneoff_mushin_dynamic_grid.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply source patch
+        run: python3 tools/oneoff_mushin_dynamic_grid.py
+      - name: Commit source patch and cleanup
+        run: |
+          rm -f MUSHIN_DYNAMIC_GRID_TRIGGER
+          rm -f .github/workflows/oneoff-mushin-dynamic-grid.yml
+          rm -f .github/workflows/oneoff-mushin-dynamic-v2.yml
+          rm -f tools/oneoff_mushin_dynamic_grid.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Apply MUSHIN settings to rebuilt folder grids'
+          git push
