@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
+import jp.mushamusha.mushinglass.MushinGlass;
+
 public class MainActivity extends Activity {
     private static final int REQ_PICK=1201, REQ_ICON=1203;
     private DataStore store;
@@ -274,6 +276,7 @@ public class MainActivity extends Activity {
             TextView empty=text(q.isEmpty()?"ここは空っぽです\n＋ から追加できます":"見つかりませんでした",16,0xFFEFEFF5);empty.setGravity(Gravity.CENTER);
             int cols=Math.max(1,grid.getColumnCount());GridLayout.LayoutParams lp=new GridLayout.LayoutParams(GridLayout.spec(0,1f),GridLayout.spec(0,cols,1f));lp.width=0;lp.height=Ui.dp(this,150);grid.addView(empty,lp);
         }
+        MushinGlass.applyToView(this,grid);
     }
 
     private void addCell(ItemModel m){
@@ -282,13 +285,13 @@ public class MainActivity extends Activity {
         LinearLayout inner=new LinearLayout(this);inner.setOrientation(LinearLayout.VERTICAL);inner.setGravity(Gravity.CENTER);inner.setPadding(Ui.dp(this,compact?2:3),Ui.dp(this,compact?3:5),Ui.dp(this,compact?2:3),Ui.dp(this,compact?2:3));
         ImageView iv=new ImageView(this);iv.setScaleType(ImageView.ScaleType.FIT_CENTER);iv.setImageDrawable(iconFor(m));int configured=store.iconSize();int is=compact?Math.min(configured,44):configured;
         TextView label=text(m.name,compact?11:12,Color.WHITE);label.setGravity(Gravity.CENTER);label.setMaxLines(2);inner.addView(iv,new LinearLayout.LayoutParams(Ui.dp(this,is),Ui.dp(this,is)));inner.addView(label,new LinearLayout.LayoutParams(-1,Ui.dp(this,compact?30:34)));cell.addView(inner,new FrameLayout.LayoutParams(-1,-1));
-        if(m.favorite){TextView star=text("★",15,0xFFFFE082);star.setGravity(Gravity.CENTER);cell.addView(star,new FrameLayout.LayoutParams(Ui.dp(this,22),Ui.dp(this,22),Gravity.START|Gravity.TOP));}
-        if(ItemModel.TYPE_APP.equals(m.type)&&isNewApp(m.packageName)){TextView n=text("NEW",9,Color.WHITE);n.setGravity(Gravity.CENTER);n.setBackground(Ui.rounded(Ui.withAlpha(store.keyColor(),95),9,this));FrameLayout.LayoutParams np=new FrameLayout.LayoutParams(Ui.dp(this,31),Ui.dp(this,18),Gravity.START|Gravity.TOP);np.topMargin=Ui.dp(this,3);np.leftMargin=Ui.dp(this,3);cell.addView(n,np);}
+        if(m.favorite){TextView star=text("★",15,0xFFFFE082);star.setTag("keep_text_color");star.setGravity(Gravity.CENTER);cell.addView(star,new FrameLayout.LayoutParams(Ui.dp(this,22),Ui.dp(this,22),Gravity.START|Gravity.TOP));}
+        if(ItemModel.TYPE_APP.equals(m.type)&&isNewApp(m.packageName)){TextView n=text("NEW",9,Color.WHITE);n.setTag("keep_text_color");n.setGravity(Gravity.CENTER);n.setBackground(Ui.rounded(Ui.withAlpha(store.keyColor(),95),9,this));FrameLayout.LayoutParams np=new FrameLayout.LayoutParams(Ui.dp(this,31),Ui.dp(this,18),Gravity.START|Gravity.TOP);np.topMargin=Ui.dp(this,3);np.leftMargin=Ui.dp(this,3);cell.addView(n,np);}
         if(ItemModel.TYPE_APP.equals(m.type)&&badgeAccess){
             int count=NotificationBadgeStore.get(m.packageName);
             if(count>0){
                 boolean numeric=store.badgeCountEnabled();
-                TextView badge=text(numeric?(count>99?"99+":String.valueOf(count)):"●",numeric?10:11,Color.WHITE);
+                TextView badge=text(numeric?(count>99?"99+":String.valueOf(count)):"●",numeric?10:11,Color.WHITE);badge.setTag("keep_text_color");
                 badge.setGravity(Gravity.CENTER);
                 badge.setBackground(Ui.rounded(0xFFE64A4A,20,this));
                 int bw=numeric?27:18,bh=numeric?22:18;
@@ -350,6 +353,7 @@ public class MainActivity extends Activity {
     private void refreshDock(){
         dock.removeAllViews();List<ItemModel> list=store.dockItems();if(list.isEmpty()){dock.setVisibility(View.GONE);return;}dock.setVisibility(View.VISIBLE);dock.setBackground(Ui.rounded(Ui.withAlpha(store.keyColor(),35),18,this));
         boolean compact=compactUi();for(ItemModel m:list){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setGravity(Gravity.CENTER);ImageView iv=new ImageView(this);iv.setImageDrawable(iconFor(m));TextView tv=text(m.name,compact?9:10,Color.WHITE);tv.setGravity(Gravity.CENTER);tv.setSingleLine(true);int icon=compact?30:34;c.addView(iv,new LinearLayout.LayoutParams(Ui.dp(this,icon),Ui.dp(this,icon)));c.addView(tv,new LinearLayout.LayoutParams(-1,Ui.dp(this,compact?16:18)));c.setOnClickListener(v->requestLaunch(m));c.setOnLongClickListener(v->{new AlertDialog.Builder(this).setTitle("ドックから外しますか？").setMessage(m.name).setPositiveButton("外す",(d,w)->{store.deleteRecursive(m.id);refreshDock();}).setNegativeButton("キャンセル",null).show();return true;});dock.addView(c,new LinearLayout.LayoutParams(0,-1,1));}
+        MushinGlass.applyToView(this,dock);
     }
 
     private void toggleEditMode(){if(searchBox!=null&&!searchBox.getText().toString().trim().isEmpty()){Toast.makeText(this,"検索中は編集できません",Toast.LENGTH_SHORT).show();return;}editMode=!editMode;if(!editMode)selectedIds.clear();refreshAll();}
