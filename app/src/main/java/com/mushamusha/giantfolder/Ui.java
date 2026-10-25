@@ -16,8 +16,9 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.io.InputStream;
+
+import jp.mushamusha.mushinglass.MushinGlass;
 
 public final class Ui {
     private static volatile Typeface cachedTypeface;
@@ -44,19 +45,8 @@ public final class Ui {
         if(ready!=null) return ready;
         synchronized (Ui.class) {
             if(cachedTypeface!=null) return cachedTypeface;
-            try {
-                String[] names = c.getAssets().list("fonts");
-                if (names != null) {
-                    for (String n : names) {
-                        String low = n.toLowerCase(java.util.Locale.ROOT);
-                        if (low.equals("riitegakinr.ttf") || low.equals("riitegakinr.otf") || low.contains("riitegaki")) {
-                            cachedTypeface=Typeface.createFromAsset(c.getAssets(), "fonts/" + n);
-                            return cachedTypeface;
-                        }
-                    }
-                }
-            } catch (IOException | RuntimeException ignored) {}
-            cachedTypeface=Typeface.create("sans-serif", Typeface.NORMAL);
+            Typeface mushin=MushinGlass.typeface(c);
+            cachedTypeface=mushin!=null?mushin:Typeface.create("sans-serif", Typeface.NORMAL);
             return cachedTypeface;
         }
     }
